@@ -6,30 +6,19 @@
 #
 # All rights reserved - Do Not Redistribute
 #
-tarball = "httpd-#{node[:http_installation][:version]}.tar.gz"
-download_file = "#{node[:http_installation][:download_url]}/#{tarball}"
-
-remote_file "#{Chef::config[:file_cache_path]}/#{tarball}" do
-  source download_file
-  action :create_if_missing
-  mode 00644
-end
-
 apache_install_dir=node[:http_installation][:install_dir]
 
-execute "tar" do
-  user "root"
-  group "root"
-  cwd apache_install_dir
-  action :run
-  command "tar xvzf #{Chef::config[:file_Cache_path]}/#{tarball}"
-  not_if{ ::File.directory?("#{apache_install_dir}/httpd-#{version}")
+execute 'openresty_package_download' do
+  command 'wget http://openresty.org/download/ngx_openresty-1.5.8.1.tar.gz'
+  cwd '/opt/'
+  not_if { File.exists?("/opt/ngx_openresty*") }
 end
-execute "move" do
-  user "root"
-  group "root"
-  cwd apache_install_dir
-  action :run
-  command "mv httpd* httpd"
-  not_if{ ::File.directory?("#{apache_install_dir}/httpd")
+
+bash 'extract_openresty' do
+  cwd ::File.dirname(src_filepath)
+  code <<-EOH 
+    tar -xzf #{src_filename} -C #{apache_install_dir}
+    mv #{apache_install_dir}/httpd* #{apache_install_dir}/httpd
+    EOH
+  not_if { ::File.exists?(apache_install_dir) }
 end
