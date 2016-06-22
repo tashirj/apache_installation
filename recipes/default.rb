@@ -18,7 +18,15 @@ bash 'extract_openresty' do
   cwd ::File.dirname(src_filepath)
   code <<-EOH 
     tar -xzf #{src_filename} -C #{apache_install_dir}
-    mv #{apache_install_dir}/httpd* #{apache_install_dir}/httpd
+    mv #{apache_install_dir}/ngx_openresty-* #{apache_install_dir}/ngx_openresty
+    cd #{apache_install_dir}/ngx_openresty
+    ./configure --prefix=/opt/openresty --with-pcre-jit --with-pcre --with-http_ssl_module --with-luajit
+    make
+    make install
+    
+    
     EOH
   not_if { ::File.exists?(apache_install_dir) }
 end
+
+
