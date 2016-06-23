@@ -23,26 +23,11 @@ bash 'extract_openresty' do
     ./configure --prefix=/opt/openresty --with-pcre-jit --with-pcre --with-http_ssl_module --with-luajit
     make
     make install
+    PATH=/opt/openresty/nginx/sbin:$PATH
+    export PATH
+    nginx -p `pwd`/ -c conf/nginx.conf
+    ln -s /usr/local/openresty/nginx/conf /etc/nginx
+    nginx -p `pwd`/ -c conf/nginx.conf
     EOH
-  not_if { ::File.exists?(apache_install_dir) }
+  only_if { ::File.exists?(apache_install_dir) }
 end
-#file '/usr/local/openresty/nginx/conf/nginx.conf' do
-#  content '<html>This is a placeholder for the home page.</html>'
-#  mode '0755'
-#  owner 'web_admin'
-#  group 'web_admin'
-#end
-bash 'nginx_configuration' do
-  code <<-EOH
-	cd #{apache_install_dir}/ngx_openresty
-	PATH=/opt/openresty/nginx/sbin:$PATH
-        export PATH
-	nginx -p `pwd`/ -c conf/nginx.conf
-	ln -s /usr/local/openresty/nginx/conf /etc/nginx
-	nginx -p `pwd`/ -c conf/nginx.conf
-  EOH
-  only_if { File.exists?("/opt/openresty/nginx/conf/nginx.conf") }
-end
-
-
-
